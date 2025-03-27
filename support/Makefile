@@ -1,4 +1,4 @@
-TARGET = idris2-systemd
+TARGET = systemd-idris
 TARGET_VERSION ?= 0.0.1
 
 INSTALLDIR = ../lib

@@ -6,4 +6,4 @@ import System.Posix.File
 --          Raw Primitives
 --------------------------------------------------------------------------------
 
-%foreign "scheme:"
+%foreign "C:i"
