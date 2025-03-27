@@ -34,7 +34,7 @@ int socket_listening(int fd) {
     return accepting;
 }
 
-int sd_notify_with_fd(int sock
+int sd_notify_with_fd( int sock
                      , char *str, size_t len // message to send
                      , struct sockaddr *dest, socklen_t lenaddr // for who
                      , int outfd // The file descriptor to send along
