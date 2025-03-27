@@ -10,6 +10,7 @@ bugtracker = "https://github.com/Matthew-Mosior/idris2-systemd/issues"
 langversion >= 0.7.0
 
 depends = base >= 0.7.0
+        , cptr
         , linux
         , posix
 
