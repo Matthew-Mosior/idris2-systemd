@@ -1,0 +1,24 @@
+package idris2-systemd
+version = 0.1.0
+authors = "Matthew Mosior"
+maintainers = "Matthew Mosior"
+brief = "A systemd library."
+homepage = "https://github.com/Matthew-Mosior/idris2-systemd"
+sourceloc = "https://github.com/Matthew-Mosior/idris2-systemd/tree/main/src"
+bugtracker = "https://github.com/Matthew-Mosior/idris2-systemd/issues"
+
+langversion >= 0.7.0
+
+depends = base >= 0.7.0
+        , linux
+        , posix
+
+sourcedir = "src"
+
+modules = System.Systemd.Daemon
+        , System.Systemd.Daemon.Fd
+        , System.Systemd.Daemon.Internal
+
+prebuild = "make -C support"
+
+preinstall = "make -C support install"
