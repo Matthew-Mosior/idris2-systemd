@@ -68,42 +68,41 @@ notifyWithFd_ unset_env state fd =
       case state /= "" of
         False =>
           pure ()
-        True  => do
-          let socketpath = case !(liftIO $ getEnv envvariablename) of
-                             Nothing         =>
-                               ""
-                             Just socketpath =>
-                               socketpath
-          case isValidPath socketpath of
-            False =>
+        True  =>
+          case !(liftIO $ getEnv envvariablename) of
+            Nothing         =>
               pure ()
-            True  => do
-              let socketpath' =  case fastUnpack socketpath of
-                                   Nil       =>
-                                     ""
-                                   (x :: xs) =>
-                                     case x == '@' of
-                                       True  =>
-                                         fastPack $
-                                           '\0' :: xs
-                                       False =>
-                                         fastPack $
-                                           (x :: xs)
-              socketfd        <- socket AF_UNIX
-                                        SOCK_DGRAM
-              srv             <- runIO ( sockaddrUn socketpath'
-                                       )
-              case fd of
-                Nothing      =>
-                  ignore $
-                    sendto socketfd
-                           state
-                           0
-                           srv
-                Just socket' => 
-                  liftIO $
-                    ignore $
-                      sendBufWithFdTo socketfd
-                                      state
-                                      srv 
-                                      socket'
+            Just socketpath =>
+              case isValidPath socketpath of
+                False =>
+                  pure ()
+                True  => do
+                  let socketpath' =  case fastUnpack socketpath of
+                                       Nil       =>
+                                         ""
+                                       (x :: xs) =>
+                                         case x == '@' of
+                                           True  =>
+                                             fastPack $
+                                               '\0' :: xs
+                                           False =>
+                                             fastPack $
+                                               (x :: xs)
+                  socketfd        <- socket AF_UNIX
+                                            SOCK_DGRAM
+                  srv             <- runIO ( sockaddrUn socketpath
+                                           )
+                  case fd of
+                    Nothing      =>
+                      ignore $
+                        sendto socketfd
+                               state
+                               0
+                               srv
+                    Just socket' => 
+                      liftIO $
+                        ignore $
+                          sendBufWithFdTo socketfd
+                                          state
+                                          srv 
+                                          socket'

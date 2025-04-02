@@ -18,7 +18,6 @@ sourcedir = "src"
 
 modules = System.Systemd.Daemon
         , System.Systemd.Daemon.Fd
-        , System.Systemd.Daemon.Types
         , System.Systemd.Internal
 
 prebuild = "make -C support"
