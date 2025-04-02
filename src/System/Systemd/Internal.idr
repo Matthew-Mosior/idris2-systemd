@@ -51,15 +51,30 @@ sendBufWithFdTo socket state socketaddress filedesc =
 export
 notifyWithFd_ : Bool -> String -> Maybe Fd -> IO ()
 notifyWithFd_ unset_env state fd = do
-  res <- runElinIO $
-           notifyImpl state fd
-  case res of
-    Left _     =>
-      pure ()
-    Right res' => do
-      when unset_env unsetEnvironment
-      pure res'
+  runElinIO $
+    handleErrors [] (notifyImpl state fd)
+  when unset_env unsetEnvironment
+  pure ()
+  --res <- runElinIO $
+  --         notifyImpl state fd
+  --case res of
+  --  Left _     =>
+  --    pure ()
+  --  Right res' => do
+  --    when unset_env unsetEnvironment
+  --    pure res'
   where
+    0 Handler : Type -> Type
+    Handler a = a -> Elin World [] ()
+    bracketCase : (Result es a -> Elin World fs b) -> Elin World es a -> Elin World fs b
+    bracketCase = flip bindResult
+    anyErr : Elin World [] a -> Elin World es a
+    anyErr = bracketCase $ \(Right v) => pure v
+    handleErrors : (hs : All Handler es) -> Elin World es () -> Elin World fs ()
+    handleErrors hs =
+      bracketCase $ \case
+        Left x  => anyErr $ collapse' $ hzipWith id hs x
+        Right _ => pure ()
     isValidPath : String -> Bool
     isValidPath path =
       (length path >= 2) &&
