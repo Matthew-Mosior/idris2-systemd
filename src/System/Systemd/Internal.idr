@@ -52,7 +52,7 @@ export
 notifyWithFd_ : Bool -> String -> Maybe Fd -> IO ()
 notifyWithFd_ unset_env state fd = do
   runElinIO $
-    handleErrors [] (notifyImpl state fd)
+    handleErrors [prettyOut] (notifyImpl state fd)
   when unset_env unsetEnvironment
   pure ()
   --res <- runElinIO $
@@ -64,10 +64,16 @@ notifyWithFd_ unset_env state fd = do
   --    when unset_env unsetEnvironment
   --    pure res'
   where
-    0 Handler : Type -> Type
-    Handler a = a -> Elin World [] ()
     bracketCase : (Result es a -> Elin World fs b) -> Elin World es a -> Elin World fs b
     bracketCase = flip bindResult
+    clear : Elin World es a -> Elin World [] ()
+    clear = bracketCase (const $ pure ())
+    stdoutLn' : String -> Elin World [] ()
+    stdoutLn' = clear {es = [Errno]} . stdoutLn
+    prettyOut : Interpolation a => a -> Elin World [] ()
+    prettyOut = stdoutLn' . interpolate
+    0 Handler : Type -> Type
+    Handler a = a -> Elin World [] () 
     anyErr : Elin World [] a -> Elin World es a
     anyErr = bracketCase $ \(Right v) => pure v
     handleErrors : (hs : All Handler es) -> Elin World es () -> Elin World fs ()
