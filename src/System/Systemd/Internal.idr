@@ -105,18 +105,18 @@ notifyWithFd_ unset_env state fd = do
                                    (x :: xs)
       socketfd        <- socket AF_UNIX
                                 SOCK_DGRAM
-      srv <- runIO ( sockaddrUn socketpath'
-                   )
+      srv             <- runIO ( sockaddrUn socketpath'
+                               )
       case fd of
-         Nothing      =>
-           liftIO $
-             sendto socketfd
-                    state
-                    0
-                    srv
-         Just socket' => 
-           liftIO $
-             sendBufWithFdTo socketfd
-                             state
-                             srv 
-                             socket'
+        Nothing      =>
+          liftIO $
+            sendto socketfd
+                   state
+                   0
+                   srv
+        Just socket' => 
+          liftIO $
+            sendBufWithFdTo socketfd
+                            state
+                            srv 
+                            socket'
