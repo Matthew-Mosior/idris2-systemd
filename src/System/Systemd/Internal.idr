@@ -69,11 +69,11 @@ notifyWithFd_ unset_env state fd =
         False =>
           pure ()
         True  => do
-          let socketpath  =  case !(liftIO $ getEnv envvariablename) of
-                               Nothing         =>
-                                 ""
-                               Just socketpath =>
-                                 socketpath
+          let socketpath = case !(liftIO $ getEnv envvariablename) of
+                             Nothing         =>
+                               ""
+                             Just socketpath =>
+                               socketpath
           case isValidPath socketpath of
             False =>
               pure ()
