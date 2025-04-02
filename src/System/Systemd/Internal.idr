@@ -79,7 +79,7 @@ notifyWithFd_ unset_env state fd = do
     isValidPath path =
       (length path >= 2) &&
       (isPrefixOf "@" path || isPrefixOf "/" path)
-    notifyImpl : Has Errno es => String -> Maybe Fd -> Elin World es ()
+    notifyImpl : String -> Maybe Fd -> Elin World [Errno] ()
     notifyImpl state fd = do
       let socketpath  =  case !(liftIO $ getEnv envvariablename) of
                            Nothing         =>
