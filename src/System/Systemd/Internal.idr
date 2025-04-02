@@ -51,22 +51,26 @@ sendBufWithFdTo socket state socketaddress filedesc =
 export
 notifyWithFd_ : Bool -> String -> Maybe Fd -> IO ()
 notifyWithFd_ unset_env state fd = do
+  {-
   runElinIO $
     handleErrors [prettyOut] (notifyImpl state fd)
   when unset_env unsetEnvironment
   pure ()
-  --res <- runElinIO $
-  --         notifyImpl state fd
-  --case res of
-  --  Left _     =>
-  --    pure ()
-  --  Right res' => do
-  --    when unset_env unsetEnvironment
-  --    pure res'
+  -}
+  res <- runElinIO $
+           notifyImpl state fd
+  case res of
+    Left _     => do
+      when unset_env unsetEnvironment
+      pure ()
+    Right res' => do
+      when unset_env unsetEnvironment
+      pure res'
   where
+    {-
     bracketCase : (Result es a -> Elin World fs b) -> Elin World es a -> Elin World fs b
     bracketCase = flip bindResult
-    clear : Elin World es a -> Elin World [] ()
+    ?clear : Elin World es a -> Elin World [] ()
     clear = bracketCase (const $ pure ())
     stdoutLn' : String -> Elin World [] ()
     stdoutLn' = clear {es = [Errno]} . stdoutLn
@@ -81,12 +85,14 @@ notifyWithFd_ unset_env state fd = do
       bracketCase $ \case
         Left x  => anyErr $ collapse' $ hzipWith id hs x
         Right _ => pure ()
+    -}
     isValidPath : String -> Bool
     isValidPath path =
       (length path >= 2) &&
       (isPrefixOf "@" path || isPrefixOf "/" path)
     notifyImpl : String -> Maybe Fd -> Elin World [Errno] ()
     notifyImpl state fd = do
+      --()              <- guard $ state /= ""
       let socketpath  =  case !(liftIO $ getEnv envvariablename) of
                            Nothing         =>
                              ""
@@ -109,14 +115,15 @@ notifyWithFd_ unset_env state fd = do
                                )
       case fd of
         Nothing      =>
-          liftIO $
+          ignore $
             sendto socketfd
                    state
                    0
                    srv
         Just socket' => 
           liftIO $
-            sendBufWithFdTo socketfd
-                            state
-                            srv 
-                            socket'
+            ignore $
+              sendBufWithFdTo socketfd
+                              state
+                              srv 
+                              socket'
