@@ -50,16 +50,8 @@ sendBufWithFdTo socket state socketaddress filedesc =
 
 export
 notifyWithFd_ : Bool -> String -> Maybe Fd -> IO ()
-notifyWithFd_ unset_env state fd = do
-  {-
-  runElinIO $
-    handleErrors [prettyOut] (notifyImpl state fd)
-  when unset_env unsetEnvironment
-  pure ()
-  -}
-  res <- runElinIO $
-           notifyImpl state fd
-  case res of
+notifyWithFd_ unset_env state fd =
+  case !(runElinIO $ notifyImpl state fd) of
     Left _     => do
       when unset_env unsetEnvironment
       pure ()
@@ -67,25 +59,6 @@ notifyWithFd_ unset_env state fd = do
       when unset_env unsetEnvironment
       pure res'
   where
-    {-
-    bracketCase : (Result es a -> Elin World fs b) -> Elin World es a -> Elin World fs b
-    bracketCase = flip bindResult
-    ?clear : Elin World es a -> Elin World [] ()
-    clear = bracketCase (const $ pure ())
-    stdoutLn' : String -> Elin World [] ()
-    stdoutLn' = clear {es = [Errno]} . stdoutLn
-    prettyOut : Interpolation a => a -> Elin World [] ()
-    prettyOut = stdoutLn' . interpolate
-    0 Handler : Type -> Type
-    Handler a = a -> Elin World [] () 
-    anyErr : Elin World [] a -> Elin World es a
-    anyErr = bracketCase $ \(Right v) => pure v
-    handleErrors : (hs : All Handler es) -> Elin World es () -> Elin World fs ()
-    handleErrors hs =
-      bracketCase $ \case
-        Left x  => anyErr $ collapse' $ hzipWith id hs x
-        Right _ => pure ()
-    -}
     isValidPath : String -> Bool
     isValidPath path =
       (length path >= 2) &&
@@ -96,7 +69,6 @@ notifyWithFd_ unset_env state fd = do
         False =>
           pure ()
         True  => do
-          --()              <- guard $ state /= ""
           let socketpath  =  case !(liftIO $ getEnv envvariablename) of
                                Nothing         =>
                                  ""
