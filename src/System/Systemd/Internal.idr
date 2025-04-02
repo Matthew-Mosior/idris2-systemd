@@ -109,13 +109,14 @@ notifyWithFd_ unset_env state fd = do
                    )
       case fd of
          Nothing      =>
-           ignore $ sendto socketfd
-                  state
-                  0
-                  srv
+           liftIO $
+             sendto socketfd
+                    state
+                    0
+                    srv
          Just socket' => 
-           liftIO ( sendBufWithFdTo socketfd
-                                   state
-                                   srv 
-                                   socket'
-                 )
+           liftIO $
+             sendBufWithFdTo socketfd
+                             state
+                             srv 
+                             socket'
