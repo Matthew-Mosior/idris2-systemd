@@ -3,6 +3,7 @@ module System.Systemd.Daemon.Fd
 import public System.Systemd.Internal
 
 import Control.Monad.Elin
+import Data.List1
 import Data.String
 import Data.Zippable
 import System
