@@ -52,7 +52,7 @@ export
 notifyWithFd_ : Bool -> String -> Maybe Fd -> IO ()
 notifyWithFd_ unset_env state fd =
   case !(runElinIO $ notifyImpl state fd) of
-    Left _     => do
+    Left  _    => do
       when unset_env unsetEnvironment
       pure ()
     Right res' => do

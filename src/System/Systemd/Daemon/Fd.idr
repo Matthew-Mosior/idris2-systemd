@@ -59,20 +59,20 @@ export
 getActivatedSockets : IO (Maybe (List Fd))
 getActivatedSockets =
   case !(runElinIO getActivatedSockets') of
-    Left _     =>
+    Left  _    =>
       pure ()
     Right res' =>
       pure res'
   where
     getActivatedSockets' : Elin World [Errno] (Maybe (List Fd))
     getActivatedSockets' = do
-      listenpid <- case !(getEnv "LISTEN_PID") of
+      listenpid <- case !(liftIO $ getEnv "LISTEN_PID") of
                      Nothing         =>
                        pure Nothing
                      Just socketpath =>
                        pure $
                          Just socketpath
-      listenfds <- case !(getEnv "LISTEN_FDS") of
+      listenfds <- case !(liftIO $ getEnv "LISTEN_FDS") of
                      Nothing         =>
                        pure Nothing
                      Just socketpath =>
@@ -91,7 +91,9 @@ getActivatedSockets =
             False =>
               pure Nothing
             True  =>
-              for_ [fdstart .. (fdstart + ((cast {to=Int} listenfds') - 1))] $ \fd => do
-                let fd' = MkFd (cast {to=Bits32} fd)
-                addFlags fd' O_NONBLOCK
-                pure fd' 
+              let fds = [fdstart .. (fdstart + ((cast {to=Int} listenfds') - 1))]
+                in map (\fd => do
+                          let fd' = MkFd (cast {to=Bits32} fd)
+                          addFlags fd' O_NONBLOCK
+                          pure fd'
+                       ) fds
