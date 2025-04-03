@@ -3,6 +3,8 @@ module System.Systemd.Daemon.Fd
 import public System.Systemd.Internal
 
 import Control.Monad.Elin
+import Data.String
+import Data.Zippable
 import System
 import System.Posix.Errno
 import System.Posix.File
@@ -64,18 +66,20 @@ getActivatedSockets =
   where
     getActivatedSockets' : Elin World [Errno] (Maybe (List Fd))
     getActivatedSockets' = do
-      listenpid <- case !(liftIO $ getEnv "LISTEN_PID") of
-                     Nothing         =>
-                       pure Nothing
-                     Just socketpath =>
-                       pure $
-                         Just socketpath
-      listenfds <- case !(liftIO $ getEnv "LISTEN_FDS") of
-                     Nothing         =>
-                       pure Nothing
-                     Just socketpath =>
-                       pure $
-                         Just socketpath
+      listenpid <-
+        case !(liftIO $ getEnv "LISTEN_PID") of
+          Nothing         =>
+            pure Nothing
+          Just socketpath =>
+            pure $
+              Just socketpath
+      listenfds <-
+        case !(liftIO $ getEnv "LISTEN_FDS") of
+          Nothing         =>
+            pure Nothing
+          Just socketpath =>
+            pure $
+              Just socketpath
       case (listenpid, listenfds) of
         (Nothing        ,    Nothing)      =>
           pure Nothing
@@ -97,3 +101,37 @@ getActivatedSockets =
                     addFlags fd O_NONBLOCK
                   pure $
                     Just fds'
+
+||| Like 'getActivatedSockets', but also return the associated names.
+||| If a file descriptor has no associated name, it will be a generic
+||| one set by systemd.
+||| Equivalent to standard `System.Systemd.Daemon.getActivatedSocketsWithNames`.
+export
+getActivatedSocketsWithNames : IO (Maybe (List (Fd, String)))
+getActivatedSocketsWithNames = 
+  case !(runElinIO getActivatedSocketsWithNames') of
+    Left  _   =>
+      pure Nothing
+    Right res =>
+      pure res
+  where
+    getActivatedSocketsWithNames' : Elin World [Errno] (Maybe (List (Fd, String)))
+    getActivatedSocketsWithNames' =
+      case !(liftIO $ getEnv "LISTEN_FDNAMES") of
+        Nothing            =>
+          pure Nothing
+        Just listenfdnames =>
+          let listenfdnames' = forget $
+                                 split (== ':') listenfdnames
+            in case !(liftIO getActivatedSockets) of
+                 Nothing          =>
+                   pure Nothing
+                 Just nonblockfds =>
+                   case (length nonblockfds == length listenfdnames') of
+                     False =>
+                       pure Nothing
+                     True  =>
+                       pure $
+                         Just $
+                           zip nonblockfds
+                               listenfdnames'
