@@ -1,7 +1,6 @@
 module System.Systemd.Internal
 
 import Control.Monad.Elin
-import Data.List
 import Data.String
 import System
 import System.FFI

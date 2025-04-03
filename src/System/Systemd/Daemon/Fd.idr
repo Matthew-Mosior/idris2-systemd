@@ -3,8 +3,6 @@ module System.Systemd.Daemon.Fd
 import public System.Systemd.Internal
 
 import Control.Monad.Elin
-import Data.List
-import Data.String
 import System
 import System.Posix.Errno
 import System.Posix.File
@@ -59,10 +57,10 @@ export
 getActivatedSockets : IO (Maybe (List Fd))
 getActivatedSockets =
   case !(runElinIO getActivatedSockets') of
-    Left  _    =>
-      pure ()
-    Right res' =>
-      pure res'
+    Left  _   =>
+      pure Nothing
+    Right res =>
+      pure res
   where
     getActivatedSockets' : Elin World [Errno] (Maybe (List Fd))
     getActivatedSockets' = do
@@ -94,8 +92,8 @@ getActivatedSockets =
               let fds  = map (cast {to=Bits32})
                              [fdstart .. (fdstart + ((cast {to=Int} listenfds') - 1))]
                   fds' = map MkFd fds
-                in liftIO $
-                     pure $
-                       Just $
-                         map (\fd' => addFlags fd' O_NONBLOCK)
-                             fds'
+                in do
+                  for_ fds' $ \fd =>
+                    addFlags fd O_NONBLOCK
+                  pure $
+                    Just fds'
