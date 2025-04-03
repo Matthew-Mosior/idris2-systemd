@@ -3,16 +3,10 @@ module System.Systemd.Daemon
 import public System.Systemd.Daemon.Fd
 import public System.Systemd.Internal
 
-import Control.Monad.Elin
-import Data.List
 import System
 import System.Posix.Errno
 import System.Posix.File
 import System.Posix.Socket
-
-%hide BV.map
-%hide Data.Buffer.Indexed.map
-%hide Data.ByteString.map
 
 ||| Notify systemd about an event
 ||| After notifying systemd the Bool parameter specify if the environment
@@ -125,11 +119,12 @@ getActivatedSockets =
     Nothing  =>
       pure Nothing
     Just fds =>
-      pure $
-        map (\(MkFd fd) =>
-               cast {to=Socket AF_UNIX} $
-                 cast {to=Int32} fd
-            ) fds
+      let fds' = map (\(MkFd fd) =>
+                        cast {to=Socket AF_UNIX} $
+                          cast {to=Int32} fd
+                     ) fds
+        in pure $
+             Just fds'
 
 ||| Same as `getActivatedSockets` but return also the names associated
 ||| with those sockets if `storeFdWithName` was used or specified in the .socket file.
@@ -142,9 +137,10 @@ getActivatedSocketsWithNames =
     Nothing          =>
       pure Nothing
     Just fdsandnames =>
-      pure $
-        map (\(MkFd fd, name) =>
-               let sock = cast {to=Socket AF_UNIX} $
-                            cast {to=Int32} fd
-                 in (sock, name)
-            ) fdsandnames
+      let fdsandnames' =map (\(MkFd fd, name) =>
+                               let sock = cast {to=Socket AF_UNIX} $
+                                            cast {to=Int32} fd
+                                 in (sock, name)
+                            ) fdsandnames
+        in pure $
+             Just fdsandnames'
