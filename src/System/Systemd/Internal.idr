@@ -48,15 +48,15 @@ sendBufWithFdTo socket state socketaddress filedesc =
                       (cast {to=Int} (fd filedesc))
 
 export
-notifyWithFd_ : Bool -> String -> Maybe Fd -> IO ()
+notifyWithFd_ : Bool -> String -> Maybe Fd -> IO (Maybe ())
 notifyWithFd_ unset_env state fd =
   case !(runElinIO $ notifyImpl state fd) of
     Left  _    => do
       when unset_env unsetEnvironment
-      pure ()
+      pure Nothing
     Right res' => do
       when unset_env unsetEnvironment
-      pure res'
+      pure $ Just ()
   where
     isValidPath : String -> Bool
     isValidPath path =
