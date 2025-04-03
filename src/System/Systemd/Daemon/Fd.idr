@@ -57,32 +57,41 @@ storeFdWithName fd name =
 ||| Equivalent to standard `System.Systemd.Daemon.getActivatedSockets`.
 export
 getActivatedSockets : IO (Maybe (List Fd))
-getActivatedSockets = do
-  listenpid <- case !(getEnv "LISTEN_PID") of
-                 Nothing         =>
-                   pure Nothing
-                 Just socketpath =>
-                   pure $
-                     Just socketpath
-  listenfds <- case !(getEnv "LISTEN_FDS") of
-                 Nothing         =>
-                   pure Nothing
-                 Just socketpath =>
-                   pure $
-                     Just socketpath
-  case (listenpid, listenfds) of
-    (Nothing        ,    Nothing)      =>
-      pure Nothing
-    (_              ,    Nothing)      =>
-      pure Nothing
-    (Nothing        ,    _      )      =>
-      pure Nothing
-    (Just listenpid', Just listenfds') => do
-      mypid <- getpid
-      case (cast {to=Int32} listenpid') == mypid of
-        False =>
+getActivatedSockets =
+  case !(runElinIO getActivatedSockets') of
+    Left _     =>
+      pure ()
+    Right res' =>
+      pure res'
+  where
+    getActivatedSockets' : Elin World [Errno] (Maybe (List Fd))
+    getActivatedSockets' = do
+      listenpid <- case !(getEnv "LISTEN_PID") of
+                     Nothing         =>
+                       pure Nothing
+                     Just socketpath =>
+                       pure $
+                         Just socketpath
+      listenfds <- case !(getEnv "LISTEN_FDS") of
+                     Nothing         =>
+                       pure Nothing
+                     Just socketpath =>
+                       pure $
+                         Just socketpath
+      case (listenpid, listenfds) of
+        (Nothing        ,    Nothing)      =>
           pure Nothing
-        True  =>
-          for_ [fdstart .. (fdstart + ((cast {to=Int} listenfds') - 1))] $ \fd => do
-            addFlags O_NONBLOCK
-            pure (MkFd (cast {to=Bits32} fd))
+        (_              ,    Nothing)      =>
+          pure Nothing
+        (Nothing        ,    _      )      =>
+          pure Nothing
+        (Just listenpid', Just listenfds') => do
+          mypid <- getpid
+          case (cast {to=Int32} listenpid') == mypid of
+            False =>
+              pure Nothing
+            True  =>
+              for_ [fdstart .. (fdstart + ((cast {to=Int} listenfds') - 1))] $ \fd => do
+                let fd' = MkFd (cast {to=Bits32} fd)
+                addFlags fd' O_NONBLOCK
+                pure fd' 
