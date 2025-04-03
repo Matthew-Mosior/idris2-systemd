@@ -137,10 +137,10 @@ getActivatedSocketsWithNames =
     Nothing          =>
       pure Nothing
     Just fdsandnames =>
-      let fdsandnames' =map (\(MkFd fd, name) =>
-                               let sock = cast {to=Socket AF_UNIX} $
-                                            cast {to=Int32} fd
-                                 in (sock, name)
-                            ) fdsandnames
+      let fdsandnames' = map (\(MkFd fd, name) =>
+                                let sock = cast {to=Socket AF_UNIX} $
+                                             cast {to=Int32} fd
+                                  in (sock, name)
+                             ) fdsandnames
         in pure $
              Just fdsandnames'
