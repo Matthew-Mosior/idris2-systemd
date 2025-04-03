@@ -91,9 +91,11 @@ getActivatedSockets =
             False =>
               pure Nothing
             True  =>
-              let fds = [fdstart .. (fdstart + ((cast {to=Int} listenfds') - 1))]
-                in map (\fd => do
-                          let fd' = MkFd (cast {to=Bits32} fd)
-                          addFlags fd' O_NONBLOCK
-                          pure fd'
-                       ) fds
+              let fds  = map (cast {to=Bits32})
+                             [fdstart .. (fdstart + ((cast {to=Int} listenfds') - 1))]
+                  fds' = map MkFd fds
+                in liftIO $
+                     pure $
+                       Just $
+                         map (\fd' => addFlags fd' O_NONBLOCK)
+                             fds'
