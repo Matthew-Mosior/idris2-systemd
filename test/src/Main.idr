@@ -11,7 +11,8 @@ main =
     in case !(System.Systemd.Daemon.Fd.storeFdWithName (MkFd 0) s) of
          Nothing =>
            die $ "Couldn't activate named socket: " ++ s
-         Just () =>
+         Just () => do
+           () <- usleep $ 1000000 * 20
            case !System.Systemd.Daemon.Fd.getActivatedSocketsWithNames of
              Nothing      =>
                die "No activated sockets."
