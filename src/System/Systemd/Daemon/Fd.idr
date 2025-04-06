@@ -60,7 +60,9 @@ export
 getActivatedSockets : IO (Maybe (List Fd))
 getActivatedSockets =
   case !(runElinIO getActivatedSockets') of
-    Left  _   =>
+    Left  err => do
+      putStrLn $
+        show err
       pure Nothing
     Right res =>
       pure res
@@ -111,7 +113,9 @@ export
 getActivatedSocketsWithNames : IO (Maybe (List (Fd, String)))
 getActivatedSocketsWithNames = 
   case !(runElinIO getActivatedSocketsWithNames') of
-    Left  _   =>
+    Left  err => do
+      putStrLn $
+        show err
       pure Nothing
     Right res =>
       pure res
