@@ -51,12 +51,15 @@ export
 notifyWithFd_ : Bool -> String -> Maybe Fd -> IO (Maybe ())
 notifyWithFd_ unset_env state fd =
   case !(runElinIO $ notifyImpl state fd) of
-    Left  _    => do
+    Left  err  => do
       when unset_env unsetEnvironment
+      putStrLn $
+        show err
       pure Nothing
     Right res' => do
       when unset_env unsetEnvironment
-      pure $ Just ()
+      pure $
+        Just res'
   where
     isValidPath : String -> Bool
     isValidPath path =
