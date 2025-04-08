@@ -6,6 +6,7 @@ import Data.String
 import System
 import System.File
 import System.Posix.File
+import System.Posix.Process
 import System.Posix.Socket
 import System.Systemd.Daemon.Fd
 
@@ -70,7 +71,7 @@ setupUnixDatagramSocket =
       ()     <- close fd
       ()     <- close' (cast {to=Fd} sock)
       True   <- setEnv "LISTEN_PID"
-                       "0"
+                       (show !getpid)
                        True
         | False =>
             die "Couldn't set environment variable: LISTEN_PID"
