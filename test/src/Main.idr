@@ -66,7 +66,7 @@ setupUnixDatagramSocket =
       ()     <- bind sock
                      unixsocketpath
       let fd =  cast {to=Fd} sock
-      fd'    <- dup2 fd (MkFd 3)
+      _      <- dup2 fd (MkFd 3)
       ()     <- close fd
       ()     <- close' (cast {to=Fd} sock)
       True   <- setEnv "LISTEN_PID"
