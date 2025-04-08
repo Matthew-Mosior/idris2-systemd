@@ -48,7 +48,12 @@ setupUnixDatagramSocket =
     setupUnixDatagramSocket' = do
       ()     <- case !(exists unixsocketpath) of
                   False =>
-                    pure ()
+                    case !(removeFile unixsocketpath) of
+                      Left err =>
+                        die $
+                          show err
+                      Right () =>
+                        pure ()
                   True  =>
                     case !(removeFile unixsocketpath) of
                       Left err =>
