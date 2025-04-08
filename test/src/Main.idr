@@ -112,6 +112,16 @@ cleanupEnv = do
   True <- unsetEnv "LISTEN_FDNAMES"
     | False =>
         die "Couldn't unset environment variable: LISTEN_FDNAMES"
+  ()   <- case !(exists unixsocketpath) of
+            False =>
+              pure ()
+            True  =>
+              case !(removeFile unixsocketpath) of
+                Left err =>
+                  die $
+                    show err
+                Right () =>
+                  pure ()
   pure ()
 
 main : IO ()
