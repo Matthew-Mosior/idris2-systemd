@@ -68,19 +68,20 @@ setupUnixDatagramSocket =
       let fd =  cast {to=Fd} sock
       fd'    <- dup2 fd (MkFd 3)
       ()     <- close fd
-      True <- setEnv "LISTEN_PID"
-                     "0"
-                     True
+      ()     <- close' (cast {to=Fd} sock)
+      True   <- setEnv "LISTEN_PID"
+                       "0"
+                       True
         | False =>
             die "Couldn't set environment variable: LISTEN_PID"
-      True <- setEnv "LISTEN_FDS"
-                     "1"
-                     True
+      True   <- setEnv "LISTEN_FDS"
+                       "1"
+                       True
         | False =>
             die "Couldn't set environment variable: LISTEN_FDS"
-      True <- setEnv "LISTEN_FDNAMES"
-                     "testdgram"
-                     True
+      True   <- setEnv "LISTEN_FDNAMES"
+                       "testdgram"
+                       True
         | False =>
             die "Couldn't set environment variable: LISTEN_FDNAMES"
       pure ()
