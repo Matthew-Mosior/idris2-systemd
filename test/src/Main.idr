@@ -63,40 +63,49 @@ setupUnixDatagramSocket =
       let fd = cast {to=Fd} sock
       fd'    <- dup2 fd (MkFd 3)
       ()     <- close fd
-      True <- setEnv "LISTEN_PID" "0" True
+      True <- setEnv "LISTEN_PID"
+                     "0"
+                     True
         | False =>
             die "Couldn't set environment variable: LISTEN_PID"
-      True <- setEnv "LISTEN_FDS" "1" True
+      True <- setEnv "LISTEN_FDS"
+                     "1"
+                     True
         | False =>
             die "Couldn't set environment variable: LISTEN_FDS"
-      True <- setEnv "LISTEN_FDNAMES" "testdgram" True
+      True <- setEnv "LISTEN_FDNAMES"
+                     "testdgram"
+                     True
         | False =>
-            die "Couldn't set environment variable: LISTEN_PID"
+            die "Couldn't set environment variable: LISTEN_FDNAMES"
       pure ()
 
 runTestReceiver : IO ()
 runTestReceiver = do
   stdoutLn "Waiting for datagram on FD 3 ..."
-  sockets <- getActivatedSocketsWithNames
-  let socket = filter (\(_, currentfdname) =>
-                         currentfdname == "testdgram"
-                      ) sockets
-  case socket of
-    (fd :: Nil) =>
-      case !(runElinIO $ readNMessages fd 5) of
-        Left  err => do
-          putStrLn $
-            show err
-          pure ()
-        Right res =>
-          pure res
-    _           =>
-      die "No socket named testdgram found."
+  case !getActivatedSocketsWithNames of
+    Nothing      =>
+      die "Couldn't retrieve activated sockets."
+    Just sockets =>
+      let socket = filter (\(_, currentfdname) =>
+                             currentfdname == "testdgram"
+                          ) sockets
+        in case socket of
+             ((fd, _) :: Nil) =>
+               case !(runElinIO $ readNMessages fd 5) of
+                 Left  err => do
+                   putStrLn $
+                     show err
+                   pure ()
+                 Right res =>
+                   pure res
+             _                =>
+               die "No socket named testdgram found."
   where
     readNMessages : Fd -> Nat -> Elin World [Errno] () 
     readNMessages _  0 = stdoutLn "Received all messages, shutting down."
     readNMessages fd n = do
-      read fd _ 16 >>= \x => 
+      read fd ByteString 16 >>= \x => 
         stdoutLn $
           "Got: " ++ show x
       readNMessages fd (minus n 1)
