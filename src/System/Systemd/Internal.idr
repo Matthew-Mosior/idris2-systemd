@@ -53,7 +53,7 @@ notifyWithFd_ unset_env state fd =
   case !(runElinIO $ notifyImpl state fd) of
     Left  err  => do
       when unset_env unsetEnvironment
-      putStrLn $
+      stdoutLn $
         show err
       pure Nothing
     Right res' => do
