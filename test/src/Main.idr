@@ -47,21 +47,6 @@ setupUnixDatagramSocket =
   where
     setupUnixDatagramSocket' : Elin World [Errno] ()
     setupUnixDatagramSocket' = do
-      ()     <- case !(exists unixsocketpath) of
-                  False =>
-                    case !(removeFile unixsocketpath) of
-                      Left err =>
-                        die $
-                          show err
-                      Right () =>
-                        pure ()
-                  True  =>
-                    case !(removeFile unixsocketpath) of
-                      Left err =>
-                        die $
-                          show err
-                      Right () =>
-                        pure ()
       sock   <- socket AF_UNIX
                        SOCK_DGRAM
       ()     <- bind sock
@@ -128,17 +113,16 @@ cleanupEnv = do
   True <- unsetEnv "LISTEN_FDNAMES"
     | False =>
         die "Couldn't unset environment variable: LISTEN_FDNAMES"
-  ()   <- case !(exists unixsocketpath) of
-            False =>
-              pure ()
-            True  =>
-              case !(removeFile unixsocketpath) of
-                Left err =>
-                  die $
-                    show err
-                Right () =>
-                  pure ()
-  pure ()
+  case !(runElinIO cleanupEnv') of
+    Left  err =>
+      die $
+        show err
+    Right res =>
+      pure res
+  where
+    cleanupEnv' : Elin World [Errno] ()
+    cleanupEnv' =
+      remove unixsocketpath
 
 main : IO ()
 main = do
@@ -150,10 +134,5 @@ main = do
               usleep 500000
   () <- threadWait tid1
   () <- runTestReceiver
-  Right () <- removeFile unixsocketpath
-    | Left err =>
-        die $
-          show err
-  () <- stdoutLn "Test passed!"
   () <- cleanupEnv
-  pure ()
+  stdoutLn "Test passed!"
