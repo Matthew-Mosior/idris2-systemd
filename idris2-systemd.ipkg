@@ -1,6 +1,7 @@
 package idris2-systemd
 version = 0.1.0
 authors = "Matthew Mosior"
+license = "BSD-3 Clause"
 maintainers = "Matthew Mosior"
 brief = "A systemd library"
 homepage = "https://github.com/Matthew-Mosior/idris2-systemd"
