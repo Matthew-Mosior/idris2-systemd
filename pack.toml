@@ -3,8 +3,3 @@ type = "local"
 path = "."
 ipkg = "idris2-systemd.ipkg"
 test = "test/test.ipkg"
-
-[custom.all.idris2-systemd-test]
-type = "local"
-path = "test"
-ipkg = "test.ipkg"
