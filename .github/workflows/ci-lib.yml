@@ -30,4 +30,4 @@ jobs:
       - name: Build lib
         run: pack --no-prompt install systemd
       - name: Run test
-        run: pack test idris2-systemd
+        run: pack --no-prompt test idris2-systemd
