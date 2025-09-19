@@ -1,5 +1,5 @@
-[custom.all.idris2-systemd]
+[custom.all.systemd]
 type = "local"
 path = "."
-ipkg = "idris2-systemd.ipkg"
+ipkg = "systemd.ipkg"
 test = "test/test.ipkg"

@@ -2,7 +2,7 @@ package idris2-systemd-test
 version = 0.1.0
 authors = "Matthew Mosior"
 
-depends = idris2-systemd
+depends = systemd
         , bytestring
         , elin
         , posix
