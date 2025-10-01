@@ -22,7 +22,10 @@ fdstart = 3
 ||| to use 'storeFd' or the notify-functions from `System.Systemd.Daemon`.
 ||| Equivalent to standard `System.Systemd.Daemon.notifyWithFD`.
 export
-notifyWithFd : Bool -> String -> Fd -> IO (Maybe ())
+notifyWithFd :  Bool
+             -> String
+             -> Fd
+             -> IO (Maybe ())
 notifyWithFd unset_env state sock =
   notifyWithFd_ unset_env
                 state
@@ -33,16 +36,20 @@ notifyWithFd unset_env state sock =
 ||| restarts and socket activation.
 ||| Equivalent to standard `System.Systemd.Daemon.storeFd`.
 export
-storeFd : Fd -> IO (Maybe ())
-storeFd sock = notifyWithFd False
-                            "FDSTORE=1"
-                            sock
+storeFd :  Fd
+        -> IO (Maybe ())
+storeFd sock =
+  notifyWithFd False
+               "FDSTORE=1"
+               sock
 
 ||| Like `storeFd`, but associate the file descriptor with a name.
 ||| Best used along with `getActivatedSocketsWithNames`.
 ||| Equivalent to standard `System.Systemd.Daemon.storeFdWithName`.
 export
-storeFdWithName : Fd -> String -> IO (Maybe ())
+storeFdWithName :  Fd
+                -> String
+                -> IO (Maybe ())
 storeFdWithName fd name =
   notifyWithFd False
                ("FDSTORE=1\nFDNAME=" ++ name)

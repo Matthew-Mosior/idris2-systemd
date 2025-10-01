@@ -15,7 +15,9 @@ import System.Posix.Socket
 ||| Returns Nothing if the program was not started with systemd
 ||| or the environment was previously unset.
 export
-notify : Bool -> String -> IO (Maybe ())
+notify :  Bool
+       -> String
+       -> IO (Maybe ())
 notify unset_env state =
   notifyWithFd_ unset_env
                 state
@@ -25,7 +27,10 @@ notify unset_env state =
 ||| It is up to the caller to properly set the message
 ||| (i.e: do not forget to set FDSTORE=1).
 export
-notifyWithFD : Bool -> String -> Socket AF_UNIX -> IO (Maybe ())
+notifyWithFD :  Bool
+             -> String
+             -> Socket AF_UNIX
+             -> IO (Maybe ())
 notifyWithFD unset_env state sock =
   notifyWithFd unset_env
                state
@@ -68,7 +73,8 @@ notifyStopping =
 
 ||| Notify systemd of an 'Errno' error.
 export
-notifyErrno : Errno -> IO (Maybe())
+notifyErrno :  Errno
+            -> IO (Maybe())
 notifyErrno (EN errorNb) =
   notify False
          ("ERRNO=" ++ show errorNb)
@@ -76,7 +82,8 @@ notifyErrno (EN errorNb) =
 ||| Notify systemd of the status of the program.
 ||| An arbitrary String can be passed.
 export
-notifyStatus : String -> IO (Maybe())
+notifyStatus :  String
+             -> IO (Maybe())
 notifyStatus msg =
   notify False
          ("STATUS=" ++ msg)
@@ -84,7 +91,8 @@ notifyStatus msg =
 ||| Notify systemd of a DBUS error like.
 ||| Correct formatting of the String is left to the caller.
 export
-notifyBusError : String -> IO (Maybe())
+notifyBusError :  String
+               -> IO (Maybe())
 notifyBusError msg =
   notify False
          ("BUSERROR=" ++ msg)
@@ -93,7 +101,8 @@ notifyBusError msg =
 ||| To be used along `getActivatedSockets` during a restart.
 ||| Useful for zero downtime restart.
 export
-storeFd : Socket AF_UNIX -> IO (Maybe ())
+storeFd :  Socket AF_UNIX
+        -> IO (Maybe ())
 storeFd sock =
   storeFd (cast {to=Fd} sock)
 
@@ -101,7 +110,9 @@ storeFd sock =
 ||| To be used along `getActivatedSocketsWithNames` during a restart.
 ||| Useful for zero downtime restart.
 export
-storeFdWithName : Socket AF_UNIX -> String -> IO (Maybe ())
+storeFdWithName :  Socket AF_UNIX
+                -> String
+                -> IO (Maybe ())
 storeFdWithName sock name = 
   storeFdWithName (cast {to=Fd} sock)
                   name
