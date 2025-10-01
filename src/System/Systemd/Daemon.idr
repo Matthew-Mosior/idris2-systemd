@@ -125,17 +125,16 @@ storeFdWithName sock name =
 ||| when the program was not socket activated).
 export
 getActivatedSockets : IO (Maybe (List (Socket AF_UNIX)))
-getActivatedSockets =
-  case !System.Systemd.Daemon.Fd.getActivatedSockets of
-    Nothing  =>
-      pure Nothing
-    Just fds =>
-      let fds' = map (\(MkFd fd) =>
-                        cast {to=Socket AF_UNIX} $
-                          cast {to=Int32} fd
-                     ) fds
-        in pure $
-             Just fds'
+getActivatedSockets = do
+  Just fds <- System.Systemd.Daemon.Fd.getActivatedSockets
+    | Nothing =>
+        pure Nothing
+  let fds' = map (\(MkFd fd) =>
+                    cast {to=Socket AF_UNIX} $
+                      cast {to=Int32} fd
+                 ) fds
+  pure $
+    Just fds'
 
 ||| Same as `getActivatedSockets` but return also the names associated
 ||| with those sockets if `storeFdWithName` was used or specified in the .socket file.
@@ -143,15 +142,14 @@ getActivatedSockets =
 ||| (i.e: usally "stored").
 export
 getActivatedSocketsWithNames : IO (Maybe (List (Socket AF_UNIX, String)))
-getActivatedSocketsWithNames =
-  case !System.Systemd.Daemon.Fd.getActivatedSocketsWithNames of
-    Nothing          =>
-      pure Nothing
-    Just fdsandnames =>
-      let fdsandnames' = map (\(MkFd fd, name) =>
-                                let sock = cast {to=Socket AF_UNIX} $
-                                             cast {to=Int32} fd
-                                  in (sock, name)
-                             ) fdsandnames
-        in pure $
-             Just fdsandnames'
+getActivatedSocketsWithNames = do
+  Just fdsandnames <- System.Systemd.Daemon.Fd.getActivatedSocketsWithNames
+    | Nothing =>
+        pure Nothing
+  let fdsandnames' = map (\(MkFd fd, name) =>
+                            let sock = cast {to=Socket AF_UNIX} $
+                                         cast {to=Int32} fd
+                              in (sock, name)
+                         ) fdsandnames
+  pure $
+    Just fdsandnames'

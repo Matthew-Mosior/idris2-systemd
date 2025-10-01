@@ -65,52 +65,33 @@ storeFdWithName fd name =
 ||| Equivalent to standard `System.Systemd.Daemon.getActivatedSockets`.
 export
 getActivatedSockets : IO (Maybe (List Fd))
-getActivatedSockets =
-  case !(runElinIO getActivatedSockets') of
-    Left  err => do
-      stdoutLn $
-        show err
-      pure Nothing
-    Right res =>
-      pure res
+getActivatedSockets = do
+  Right res <- runElinIO getActivatedSockets'
+    | Left err => do
+        () <- stdoutLn $
+          show err
+        pure Nothing
+  pure res
   where
     getActivatedSockets' : Elin World [Errno] (Maybe (List Fd))
     getActivatedSockets' = do
-      listenpid <-
-        case !(liftIO $ getEnv "LISTEN_PID") of
-          Nothing         =>
+      Just listenpid <- liftIO $ getEnv "LISTEN_PID"
+        | Nothing =>
             pure Nothing
-          Just socketpath =>
-            pure $
-              Just socketpath
-      listenfds <-
-        case !(liftIO $ getEnv "LISTEN_FDS") of
-          Nothing         =>
+      Just listenfds <- liftIO $ getEnv "LISTEN_FDS"
+        | Nothing =>
             pure Nothing
-          Just socketpath =>
-            pure $
-              Just socketpath
-      case (listenpid, listenfds) of
-        (Nothing        ,    Nothing)      =>
-          pure Nothing
-        (_              ,    Nothing)      =>
-          pure Nothing
-        (Nothing        ,    _      )      =>
-          pure Nothing
-        (Just listenpid', Just listenfds') => do
-          mypid <- getpid
-          case (cast {to=Int32} listenpid') == mypid of
-            False =>
-              pure Nothing
-            True  =>
-              let fds  = map (cast {to=Bits32})
-                             [fdstart .. (fdstart + ((cast {to=Int} listenfds') - 1))]
-                  fds' = map MkFd fds
-                in do
-                  for_ fds' $ \fd =>
-                    addFlags fd O_NONBLOCK
-                  pure $
-                    Just fds'
+      mypid <- getpid
+      True <- pure $ (cast {to=Int32} listenpid) == mypid
+        | False =>
+            pure Nothing
+      let fds  = map (cast {to=Bits32})
+                     [fdstart .. (fdstart + ((cast {to=Int} listenfds) - 1))]
+          fds' = map MkFd fds
+      for_ fds' $ \fd =>
+        addFlags fd O_NONBLOCK
+      pure $
+        Just fds'
 
 ||| Like 'getActivatedSockets', but also return the associated names.
 ||| If a file descriptor has no associated name, it will be a generic
@@ -118,32 +99,28 @@ getActivatedSockets =
 ||| Equivalent to standard `System.Systemd.Daemon.getActivatedSocketsWithNames`.
 export
 getActivatedSocketsWithNames : IO (Maybe (List (Fd, String)))
-getActivatedSocketsWithNames = 
-  case !(runElinIO getActivatedSocketsWithNames') of
-    Left  err => do
-      stdoutLn $
-        show err
-      pure Nothing
-    Right res =>
-      pure res
+getActivatedSocketsWithNames = do
+  Right res <- runElinIO getActivatedSocketsWithNames'
+    | Left err => do
+        () <- stdoutLn $
+          show err
+        pure Nothing
+  pure res
   where
     getActivatedSocketsWithNames' : Elin World [Errno] (Maybe (List (Fd, String)))
-    getActivatedSocketsWithNames' =
-      case !(liftIO $ getEnv "LISTEN_FDNAMES") of
-        Nothing            =>
-          pure Nothing
-        Just listenfdnames =>
-          let listenfdnames' = forget $
-                                 split (== ':') listenfdnames
-            in case !(liftIO getActivatedSockets) of
-                 Nothing          =>
-                   pure Nothing
-                 Just nonblockfds =>
-                   case (length nonblockfds == length listenfdnames') of
-                     False =>
-                       pure Nothing
-                     True  =>
-                       pure $
-                         Just $
-                           zip nonblockfds
-                               listenfdnames'
+    getActivatedSocketsWithNames' = do
+      Just listenfdnames <- liftIO $ getEnv "LISTEN_FDNAMES"
+        | Nothing =>
+            pure Nothing
+      let listenfdnames' = forget $
+                             split (== ':') listenfdnames
+      Just nonblockfds <- liftIO getActivatedSockets
+        | Nothing =>
+           pure Nothing
+      True <- pure $ length nonblockfds == length listenfdnames'
+        | False =>
+            pure Nothing
+      pure $
+        Just $
+          zip nonblockfds
+              listenfdnames'
