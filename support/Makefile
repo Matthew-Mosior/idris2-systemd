@@ -12,7 +12,7 @@ ifeq ($(findstring clang,$(CC_VERSION)),clang)
  DYLIB_WORKAROUND = cp "${INSTALLDIR}/${TARGET}" "${INSTALLDIR}/${TARGET}.dylib"
 else
  DYLIB_WORKAROUND = cp "${INSTALLDIR}/${TARGET}" "${INSTALLDIR}/${TARGET}.so"
- LDFLAGS += -fuse-ld=gold
+ LDFLAGS += -fuse-ld=lld
 endif
 
 SRCS = $(wildcard *.c)
