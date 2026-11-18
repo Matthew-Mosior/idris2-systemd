@@ -104,36 +104,14 @@ descriptor.
 
 ### Public modules
 
-<table>
-  <thead>
-    <tr>
-      <th>Module</th>
-      <th>Responsibility</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>`System.Systemd.Daemon`</td>
+| Module                     | Responsibility                                |
+| -------------------------- | --------------------------------------------- |
+| `System.Systemd.Daemon`    | Service lifecycle, status and watchdog        |
+| `System.Systemd.Daemon`    | Socket-oriented activation and storage        |
+| `System.Systemd.Daemon.Fd` | Raw `Fd` notification, storage and activation |
+| `System.Systemd.Internal`  | Notification transport and native FFI         |
 
-      <td>
-        Service lifecycle, status and watchdog notifications;
-        socket-oriented activation and storage
-      </td>
-    </tr>
-    <tr>
-      <td>`System.Systemd.Daemon.Fd`</td>
-      <td>Raw `Fd` notification, storage and activation</td>
-    </tr>
-    <tr>
-      <td>`System.Systemd.Internal`</td>
 
-      <td>
-        Notification transport and native FFI implementation; primarily
-        implementation-facing
-      </td>
-    </tr>
-  </tbody>
-</table>
 
 ## Service notifications
 
@@ -168,17 +146,17 @@ Import `System.Systemd.Daemon`:
 import System.Systemd.Daemon
 ```
 
-| Function | Type | Notification |
-| --- | --- | --- |
-| `notify` | `Bool -> String -> IO (Maybe ())` | Arbitrary message |
-| `notifyReady` | `IO (Maybe ())` | `READY=1` |
-| `notifyWatchdog` | `IO (Maybe ())` | `WATCHDOG=1` |
-| `notifyReloading` | `IO (Maybe ())` | `RELOADING=1` |
-| `notifyStopping` | `IO (Maybe ())` | `STOPPING=1` |
-| `notifyPID` | `Int -> IO (Maybe ())` | `MAINPID=<pid>` |
-| `notifyStatus` | `String -> IO (Maybe ())` | `STATUS=<message>` |
-| `notifyErrno` | `Errno -> IO (Maybe ())` | `ERRNO=<number>` |
-| `notifyBusError` | `String -> IO (Maybe ())` | `BUSERROR=<message>` |
+| Function          | Type                              | Notification         |
+| ----------------- | --------------------------------- | -------------------- |
+| `notify`          | `Bool -> String -> IO (Maybe ())` | Arbitrary message    |
+| `notifyReady`     | `IO (Maybe ())`                   | `READY=1`            |
+| `notifyWatchdog`  | `IO (Maybe ())`                   | `WATCHDOG=1`         |
+| `notifyReloading` | `IO (Maybe ())`                   | `RELOADING=1`        |
+| `notifyStopping`  | `IO (Maybe ())`                   | `STOPPING=1`         |
+| `notifyPID`       | `Int -> IO (Maybe ())`            | `MAINPID=<pid>`      |
+| `notifyStatus`    | `String -> IO (Maybe ())`         | `STATUS=<message>`   |
+| `notifyErrno`     | `Errno -> IO (Maybe ())`          | `ERRNO=<number>`     |
+| `notifyBusError`  | `String -> IO (Maybe ())`         | `BUSERROR=<message>` |
 
 For example:
 
@@ -274,11 +252,11 @@ sequenceDiagram
 
 ### Activation environment
 
-| Variable | Meaning |
-| --- | --- |
-| `LISTEN_PID` | PID of the process expected to consume the descriptors |
-| `LISTEN_FDS` | Number of inherited descriptors, beginning at descriptor `3` |
-| `LISTEN_FDNAMES` | Colon-separated descriptor names, when supplied |
+| Variable         | Meaning                                                      |
+| ---------------- | ------------------------------------------------------------ |
+| `LISTEN_PID`     | PID of the process expected to consume the descriptors       |
+| `LISTEN_FDS`     | Number of inherited descriptors, beginning at descriptor `3` |
+| `LISTEN_FDNAMES` | Colon-separated descriptor names, when supplied              |
 
 The implementation checks that `LISTEN_PID` matches the current process,
 constructs the descriptor sequence from `3` through `3 + LISTEN_FDS - 1`, and
@@ -368,47 +346,21 @@ sequenceDiagram
 
 ### Descriptor storage API
 
-<table>
-  <thead>
-    <tr>
-      <th>Module</th>
-      <th>Function</th>
-      <th>Type</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>`System.Systemd.Daemon.Fd`</td>
-      <td>`notifyWithFd`</td>
-      <td>`Bool -> String -> Fd -> IO (Maybe ())`</td>
-    </tr>
-    <tr>
-      <td>`System.Systemd.Daemon.Fd`</td>
-      <td>`storeFd`</td>
-      <td>`Fd -> IO (Maybe ())`</td>
-    </tr>
-    <tr>
-      <td>`System.Systemd.Daemon.Fd`</td>
-      <td>`storeFdWithName`</td>
-      <td>`Fd -> String -> IO (Maybe ())`</td>
-    </tr>
-    <tr>
-      <td>`System.Systemd.Daemon`</td>
-      <td>`notifyWithFD`</td>
-      <td>`Bool -> String -> Socket AF_UNIX -> IO (Maybe ())`</td>
-    </tr>
-    <tr>
-      <td>`System.Systemd.Daemon`</td>
-      <td>`storeFd`</td>
-      <td>`Socket AF_UNIX -> IO (Maybe ())`</td>
-    </tr>
-    <tr>
-      <td>`System.Systemd.Daemon`</td>
-      <td>`storeFdWithName`</td>
-      <td>`Socket AF_UNIX -> String -> IO (Maybe ())`</td>
-    </tr>
-  </tbody>
-</table>
+The raw-descriptor API is provided by `System.Systemd.Daemon.Fd`:
+
+| Function          | Type                                    |
+| ----------------- | --------------------------------------- |
+| `notifyWithFd`    | `Bool -> String -> Fd -> IO (Maybe ())` |
+| `storeFd`         | `Fd -> IO (Maybe ())`                   |
+| `storeFdWithName` | `Fd -> String -> IO (Maybe ())`         |
+
+The socket-oriented API is provided by `System.Systemd.Daemon`:
+
+| Function          | Type                                                |
+| ----------------- | --------------------------------------------------- |
+| `notifyWithFD`    | `Bool -> String -> Socket AF_UNIX -> IO (Maybe ())` |
+| `storeFd`         | `Socket AF_UNIX -> IO (Maybe ())`                   |
+| `storeFdWithName` | `Socket AF_UNIX -> String -> IO (Maybe ())`         |
 
 The `storeFd` functions construct `FDSTORE=1`; `storeFdWithName` additionally
 sends `FDNAME=<name>`. `notifyWithFd` and `notifyWithFD` accept arbitrary
