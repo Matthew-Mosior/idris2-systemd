@@ -1,25 +1,15 @@
 package systemd
 
-version = 0.1.0
-authors = "Matthew Mosior"
-license = "BSD-3 Clause"
-maintainers = "Matthew Mosior"
-brief = "A systemd library"
-homepage = "https://github.com/Matthew-Mosior/idris2-systemd"
-sourceloc = "https://github.com/Matthew-Mosior/idris2-systemd/tree/main/src"
-bugtracker = "https://github.com/Matthew-Mosior/idris2-systemd/issues"
-
-langversion >= 0.7.0
-
-depends = base >= 0.7.0
-        , elin
-        , posix
-
-sourcedir = "src"
-
-modules = System.Systemd.Daemon
-        , System.Systemd.Daemon.Fd
-        , System.Systemd.Internal
-
-prebuild = "make -C support"
-preinstall = "make -C support install"
+version     = 0.1.0
+authors     = "Matthew Mosior"
+license     = "BSD-3 Clause"
+brief       = "A systemd library"
+depends     = base >= 0.7.0
+            , elin
+            , posix
+sourcedir   = "src"
+modules     = System.Systemd.Daemon
+            , System.Systemd.Daemon.Fd
+            , System.Systemd.Internal
+prebuild    = "make -C support"
+preinstall  = "make -C support install"
