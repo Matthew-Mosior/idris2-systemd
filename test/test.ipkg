@@ -1,12 +1,11 @@
 package idris2-systemd-test
-version = 0.1.0
-authors = "Matthew Mosior"
 
-depends = systemd
-        , bytestring
-        , elin
-        , posix
-
-main = Main
+version    = 0.1.0
+authors    = "Matthew Mosior"
+sourcedir  = "src"
+depends    = systemd
+           , bytestring
+           , elin
+           , posix
+main       = Main
 executable = "idris2-systemd-test"
-sourcedir = "src"
